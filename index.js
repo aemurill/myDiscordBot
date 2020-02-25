@@ -73,13 +73,17 @@ function commandRules(m, mode){
   printFileToDiscord(m, mode, RULES_TEXT_FILENAME);
 }
 
-function commandTalkingPoints(m){
-  printFileToDiscord(m, 0, TALKING_POINTS_TEXT_FILENAME);
-}
+/*
+ *  HELP
+ */
 
 function commandHelp(m, mode){
   printFileToDiscord(m, mode, HELP_TEXT_FILENAME);
 }
+
+/*
+ *  Talk with my Dialogflow Agent
+ */
 
 function commandTalk(m){
   if(mArgs.length > 0){
@@ -92,6 +96,10 @@ function commandTalk(m){
     return sendMsg('You didn\'t say anything?', m);
   }
 }
+
+/*
+ *  Let Me Google That For You
+ */
 
 function commandLMGTFY(m){
   var index = 0;
@@ -110,11 +118,17 @@ function commandLMGTFY(m){
     }
     return sendReply('Let Me Google That For You: ' + string,m);
   }else{
-    return sendReply('Do \`lmgtfy <Query>\`, or \`lmgtfy @someone <Query>\`. \nYou put in an empty query, dude.', m);
+    return sendReply('Do \`lmgtfy <Query>\`, or \`lmgtfy @someone <Query>\`.'+
+      '\nYou put in an empty query, dude.', m);
   }
 }
 
-function commandConfig(m){
+
+/*
+ *  MAIN CONFIG COMMAND CODE
+ */
+
+function commandAdmin(m){
   if(!isFromRoleMember(m, config.reqrole)){
     printInvalidAccess(m);
     return;
@@ -182,6 +196,10 @@ function isFromRoleMember(m, role){
   return m.member.roles.find(r => r.name === role);
 }
 
+/*
+ *  MAIN MESSAGE RESPONSE CODE
+ */
+
 discordClient.on('message', m => {
   if (isSameSender(m)) return;
   console.log("===================================");
@@ -222,8 +240,8 @@ discordClient.on('message', m => {
     case 'lmgtfy':
       commandLMGTFY(m);
       break;
-    case 'config':
-      commandConfig(m);
+    case 'admin':
+      commandAdmin(m);
       break;
     default: //DEFAULT FALLBACK
       return sendReply('use \`'+config.prefix + ' help\` to get help!', m);
@@ -274,7 +292,8 @@ function getUserFromMention(mention) {
 	}
 }
 
-async function detectIntent(projectId, sessionId, sessionClient, query, contexts, languageCode) {
+async function detectIntent(projectId, sessionId, sessionClient, query, 
+    contexts, languageCode) {
   // The path to identify the agent that owns the created intent.
   const sessionPath = sessionClient.sessionPath(projectId, sessionId);
 
@@ -319,6 +338,10 @@ function printFulfillmentMessages(fulfillmentMessages, m){
   }
 }
 
+function dialogflowTalkingPoints(m){
+  printFileToDiscord(m, 0, TALKING_POINTS_TEXT_FILENAME);
+}
+
 async function executeQueries(projectId, sessionId, sessionClient, 
                               queries, languageCode, message) {
   // Keeping the context across queries let's us simulate an ongoing 
@@ -333,19 +356,21 @@ async function executeQueries(projectId, sessionId, sessionClient,
         await detectIntent(projectId, sessionId, sessionClient, 
                           query, context, languageCode);
       console.log('Detected intent');
-      printFulfillmentMessages(intentResponse.queryResult.fulfillmentMessages, message);
+      printFulfillmentMessages(intentResponse.queryResult.fulfillmentMessages,
+         message);
       //console.log(
       //  `Fulfillment Text: ${intentResponse.queryResult.fulfillmentText}`
       //);
       //message.channel.send(`${intentResponse.queryResult.fulfillmentText}`);
       var flag = intentResponse.queryResult.intent.displayName;
-      console.log("queryResult: "+util.inspect(intentResponse.queryResult,{depth:null}));
+      console.log("queryResult: "+util.inspect(intentResponse.queryResult,
+        {depth:null}));
       switch(flag){
         case 'WhatAreTheRules':
             commandRules(message, 0);
             break
         case 'WhatElseCanIDo':
-            commandTalkingPoints(message);
+            dialogflowTalkingPoints(message);
             break
       }
       // Use the context from this response for next queries
@@ -357,29 +382,26 @@ async function executeQueries(projectId, sessionId, sessionClient,
   }
 }
 
-function detectTextIntent(projectId, sessionId, queries, languageCode, message) {
+function detectTextIntent(projectId, sessionId, queries, languageCode, message){
   // [START dialogflow_detect_intent_text]
-  /**
-   * TODO(developer): UPDATE these variables before running the sample.
-   */
   // projectId: ID of the GCP project where Dialogflow agent is deployed
-  // const projectId = 'PROJECT_ID';
   // sessionId: Random number or hashed user identifier
-  // const sessionId = 123456;
-  // queries: A set of sequential queries to be send to Dialogflow agent for Intent Detection
-  //queries = ["stuff"];
-  // languageCode: Indicates the language Dialogflow agent should use to detect intents
-  // const languageCode = 'en';
+  // queries: A set of sequential queries to be send to Dialogflow agent for
+  //    Intent Detection
+  // languageCode: Indicates the language Dialogflow agent should use to 
+  //    detect intents
 
   // Instantiates a session client
   const sessionClient = new dialogflow.SessionsClient();
-  executeQueries(projectId, sessionId, sessionClient, queries, languageCode, message);
+  executeQueries(projectId, sessionId, sessionClient, queries, languageCode,
+     message);
   // [END dialogflow_detect_intent_text]
 }
 
 
 function remove(username, text) {
-  return text.replace('@' + username + ' ', '').replace(process.env.DISCORD_PREFIX + ' ', '');
+  return text.replace('@' + username + ' ', '')
+    .replace(process.env.DISCORD_PREFIX + ' ', '');
 }
 
 discordClient.login(process.env.DISCORD_TOKEN);
