@@ -1,0 +1,4 @@
+Reminder: Only admins can use `config`!
+Use `config set <option>` to set options.
+    options include:
+        limit: who can use the bot?
