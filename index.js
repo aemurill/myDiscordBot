@@ -26,6 +26,7 @@ var default_config = {
   reqrole: "bot-tester"
 };
 var banlist = {};
+var banmap = new Map();
 
 if(Object.entries(config).length === 0)
   tools.writeStringAsJsonToFile(CONFIG_FILENAME, default_config);
@@ -34,6 +35,21 @@ config = tools.readJsonFromFileAsString(CONFIG_FILENAME);
 if(Object.entries(banlist).length === 0)
   tools.writeStringAsJsonToFile(BANLIST_FILENAME, banlist);
 banlist = tools.readJsonFromFileAsString(BANLIST_FILENAME);
+
+loadBanList();
+
+function updateBanlist() {
+  banmap.forEach(function(value, key){
+      banlist[key] = value
+  });
+
+  tools.writeStringAsJsonToFile(BANLIST_FILENAME, banlist);
+}
+
+function loadBanList(){
+  banmap = new Map(Object.entries(banlist));
+}
+
 
 discordClient.on('ready', () => {
   console.log('Ready!');
@@ -67,6 +83,11 @@ function sendPing(text, message, user){
 function printFileToDiscord(m, mode, filename){
   if(mode == 1) sendReply(tools.getFileAsString(filename), m);
   else sendMsg(tools.getFileAsString(filename), m);
+}
+
+function isAuthorAdmin(m){
+  console.log("is admin?"+m.member.hasPermission('ADMINISTRATOR'));
+  return m.member.hasPermission('ADMINISTRATOR');
 }
 
 function commandRules(m, mode){
@@ -129,16 +150,16 @@ function commandLMGTFY(m){
  */
 
 function commandAdmin(m){
-  if(!isFromRoleMember(m, config.reqrole)){
-    printInvalidAccess(m);
+  if(!isFromRoleMember(m, config.reqrole) && !isAuthorAdmin(m)){
+    printInvalidAccess(m); 
     return;
-  } 
+  }
   //mContentSplit;
   //mCommand;
   //mArgs;
-  var configCommand = mArgs[0];
+  var adminCommand = mArgs[0];
   var doPrintDone = true;
-  switch(configCommand){
+  switch(adminCommand){
     case 'set':
         var setCommand = mArgs[1];
         var doDefault2 = true;
@@ -149,14 +170,12 @@ function commandAdmin(m){
             doDefault2 = false;
             config.prefix = value;
             tools.writeStringAsJsonToFile(CONFIG_FILENAME, config);
-            console.log(config);
             break;
           case 'reqrole':
             if(value == undefined) break;
             doDefault2 = false;
             config.reqrole = value;
             tools.writeStringAsJsonToFile(CONFIG_FILENAME, config);
-            console.log(config);
             break;
         }
         if(doDefault2){
@@ -164,13 +183,34 @@ function commandAdmin(m){
           sendReply("Use as \`config set <option> <value>\`",m);
         }
         break;
+    case 'botban':
+        var value = mArgs[1];
+        value = value.replace(/[\\<>@#&!]/g, "");
+        var user = discordClient.users.get(value);
+        if(user != undefined){
+          banmap.set(user.id, user.username);
+          updateBanlist();
+        }
+        break;
+    case 'unbotban':
+        var value = mArgs[1];
+        value = value.replace(/[\\<>@#&!]/g, "");        
+        discordClient.fetchUser(value);
+        if(user != undefined){
+          banmap.delete(user.id, user.username);
+          updateBanlist();
+        }
+        break;
     case 'default':        
         tools.writeStringAsJsonToFile(CONFIG_FILENAME, default_config);
         tools.readJsonFromFileAsString(CONFIG_FILENAME, default_config);
         console.log(config);
+        banmap = new Map();
+        updateBanlist();
+        console.log(banlist);
         break;
     default:
-        printFileToDiscord(m, 0, "config_help.txt");
+        printFileToDiscord(m, 1, "config_help.txt");
         doPrintDone = false;
   }
   if(doPrintDone){
@@ -196,11 +236,18 @@ function isFromRoleMember(m, role){
   return m.member.roles.find(r => r.name === role);
 }
 
+function isUserBanned(m){
+  loadBanList();
+  console.log(banmap.has(m.author.id));
+  return banmap.has(m.author.id);
+}
+
 /*
  *  MAIN MESSAGE RESPONSE CODE
  */
 
 discordClient.on('message', m => {
+  if (isUserBanned(m)) return;
   if (isSameSender(m)) return;
   console.log("===================================");
   console.log('m:'+m.content);

@@ -1,4 +1,10 @@
 Reminder: Only admins can use `config`!
-Use `config set <option>` to set options.
+Use `admin set <option> <value>` to set options.
     options include:
-        limit: who can use the bot?
+        prefix: how do we call the bot?
+        reqrole: what role is needed to access admin commands for the bot?
+Use `admin botban <user>` to ban someone from using the bot.
+Use `admin unbotban <user>` to undo that.
+Use `admin default` to reset the bot!
+
+
