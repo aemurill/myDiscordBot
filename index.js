@@ -86,7 +86,6 @@ function printFileToDiscord(m, mode, filename){
 }
 
 function isAuthorAdmin(m){
-  console.log("is admin?"+m.member.hasPermission('ADMINISTRATOR'));
   return m.member.hasPermission('ADMINISTRATOR');
 }
 
@@ -238,7 +237,6 @@ function isFromRoleMember(m, role){
 
 function isUserBanned(m){
   loadBanList();
-  console.log(banmap.has(m.author.id));
   return banmap.has(m.author.id);
 }
 
@@ -249,8 +247,8 @@ function isUserBanned(m){
 discordClient.on('message', m => {
   if (isUserBanned(m)) return;
   if (isSameSender(m)) return;
-  console.log("===================================");
-  console.log('m:'+m.content);
+  console.log("==============================================================");
+  console.log('Accepted Message:'+m.content);
   console.log("--------------------------------------------------------------");
   mContent = m.content;
   if (isInvokedViaPrefix(m)) {
@@ -263,14 +261,14 @@ discordClient.on('message', m => {
     }
     return;
   }
-  console.log("tm:"+mContent);
+  //console.log(":"+mContent);
   mContentSplit = mContent.split(/ +/);
   mCommand = mContentSplit[0];
   mArgs = mContentSplit.slice(1);
   
   
-  console.log(mCommand);
-  console.log(mArgs);
+  console.log("Command:"+mCommand);
+  console.log("Args:"+mArgs);
 
   switch(mCommand){
     case 'help':
