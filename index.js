@@ -247,7 +247,7 @@ function isUserBanned(m){
 discordClient.on('message', m => {
   if (isUserBanned(m)) return;
   if (isSameSender(m)) return;
-  console.log("==============================================================");
+  console.log("\n\n\n\n\n\n\n==============================================================");
   console.log('Accepted Message:'+m.content);
   console.log("--------------------------------------------------------------");
   mContent = m.content;
