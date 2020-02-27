@@ -76,6 +76,7 @@ discordClient.on('guildCreate',guild=>{
   pingOwner(guild, "Thanks for letting me join!");
 });
 
+
 var mContent
 var mContentSplit;
 var mCommand;
@@ -479,8 +480,9 @@ function remove(username, text) {
     .replace(process.env.DISCORD_PREFIX + ' ', '');
 }
 
-function closeRL(){
+function close(){
   rl.close();
+  process.exit(0);
 }
 
 function pingOwner(guild, text){
@@ -490,40 +492,45 @@ function pingOwner(guild, text){
 
 function pingOwners(func, text){
   var guildArray = discordClient.guilds.array();
-  console.log(func);
+  console.log(guildArray);
   var ctr = 0;
   for(var guild of guildArray){
     ctr++;
     if(ctr < guildArray.length) pingOwner(guild, text);
     else{
       const promise = pingOwner(guild, text);
-      promise.then(function(value){
-        func();
-      });
+      if(func!= null){
+        promise.then(function(value){
+          func();
+        });
+      }
     }
   }
 }
 
-discordClient.login(process.env.DISCORD_TOKEN);
+discordClient.login(process.env.DISCORD_TOKEN).then(()=>{
+  pingOwners(null, "<><><><><><>\nI'm back online!");
+});
 
 rl.prompt();
 
 rl.on('line', (line) => {
   switch (line.trim()) {
+    case 'help':
+      console.log('hello, close, help');
+      break;
     case 'hello':
       console.log('world!');
       break;
     case 'close':
-      console.log('Closing');
-      pingOwners(closeRL, "I'm shutting down for the time being, sorry for any inconvenience");      
+      rl.close();
     default:
       console.log(`Say what? I might have heard '${line.trim()}'`);
       break;
   }
   rl.prompt();
 }).on('close', () => {
-  console.log('Have a great day!');
-  process.exit(0);
+  pingOwners(close, "<><><><><><>\nI'm shutting down for the time being, sorry for any inconvenience");        
 });
 
 /*rl.question('quit', (answer)=>{
