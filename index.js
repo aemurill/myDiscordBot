@@ -13,11 +13,26 @@ const sessionID = 'discordbot';
 const Discord = require('discord.js');
 const discordClient = new Discord.Client();
 
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: 'CMD>'
+});
+
 const CONFIG_FILENAME = "config.json";
 const BANLIST_FILENAME = "banlist.json";
 const RULES_TEXT_FILENAME = "rules.txt";
 const TALKING_POINTS_TEXT_FILENAME = "talkingpoints.txt";
 const HELP_TEXT_FILENAME = "help.txt";
+
+const HORZ_LINE_SINGLE = 
+  "--------------------------------------------------------------";
+const HORZ_LINE_DOUBLE = 
+  "==============================================================";
+  const HORZ_LINE_JAGGED = 
+  "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>";
 
 var config = {};
 var default_config = {
@@ -57,6 +72,10 @@ discordClient.on('ready', () => {
   console.info(`Logged in as ${discordClient.user.username}!`);
 });
 
+discordClient.on('guildCreate',guild=>{
+  pingOwner(guild, "Thanks for letting me join!");
+});
+
 var mContent
 var mContentSplit;
 var mCommand;
@@ -65,6 +84,8 @@ var mArgs;
 let context;
 
 function sendReply(text, message){
+  console.log(HORZ_LINE_JAGGED+"\nSending Reply:");
+  console.log(text);
   if(message.channel.type == "dm"){
     message.channel.send(text);
   }else{
@@ -73,10 +94,14 @@ function sendReply(text, message){
 }
 
 function sendMsg(text, message){
+  console.log(HORZ_LINE_JAGGED+"\nSending Msg:");
+  console.log(text);
   message.channel.send(text);
 }
 
 function sendPing(text, message, user){
+  console.log(HORZ_LINE_JAGGED+"\nSending Ping:");
+  console.log(text);
   message.channel.send(user + ", " + text);
 }
 
@@ -247,9 +272,9 @@ function isUserBanned(m){
 discordClient.on('message', m => {
   if (isUserBanned(m)) return;
   if (isSameSender(m)) return;
-  console.log("\n\n\n\n\n\n\n==============================================================");
+  console.log("\n\n"+HORZ_LINE_DOUBLE);
   console.log('Accepted Message:'+m.content);
-  console.log("--------------------------------------------------------------");
+  console.log(HORZ_LINE_SINGLE);
   mContent = m.content;
   if (isInvokedViaPrefix(m)) {
     mContent = mContent.slice(config.prefix.length); 
@@ -270,6 +295,7 @@ discordClient.on('message', m => {
   console.log("Command:"+mCommand);
   console.log("Args:"+mArgs);
 
+  console.log(HORZ_LINE_SINGLE);
   switch(mCommand){
     case 'help':
       //return sendReply('Use \`'+config.prefix+
@@ -287,6 +313,10 @@ discordClient.on('message', m => {
       break;
     case 'admin':
       commandAdmin(m);
+      break;
+    case 'test':
+      sendMsg("THIS IS A TEST FUNCTION, WEIRD SHIT MIGHT HAPPEN", message);
+      pingOwner(m.guild, "Thanks for letting me join!");
       break;
     default: //DEFAULT FALLBACK
       return sendReply('use \`'+config.prefix + ' help\` to get help!', m);
@@ -449,4 +479,53 @@ function remove(username, text) {
     .replace(process.env.DISCORD_PREFIX + ' ', '');
 }
 
+function closeRL(){
+  rl.close();
+}
+
+function pingOwner(guild, text){
+  var owner = guild.owner;
+  return discordClient.users.get(owner.id).send(text);
+}
+
+function pingOwners(func, text){
+  var guildArray = discordClient.guilds.array();
+  console.log(func);
+  var ctr = 0;
+  for(var guild of guildArray){
+    ctr++;
+    if(ctr < guildArray.length) pingOwner(guild, text);
+    else{
+      const promise = pingOwner(guild, text);
+      promise.then(function(value){
+        func();
+      });
+    }
+  }
+}
+
 discordClient.login(process.env.DISCORD_TOKEN);
+
+rl.prompt();
+
+rl.on('line', (line) => {
+  switch (line.trim()) {
+    case 'hello':
+      console.log('world!');
+      break;
+    case 'close':
+      console.log('Closing');
+      pingOwners(closeRL, "I'm shutting down for the time being, sorry for any inconvenience");      
+    default:
+      console.log(`Say what? I might have heard '${line.trim()}'`);
+      break;
+  }
+  rl.prompt();
+}).on('close', () => {
+  console.log('Have a great day!');
+  process.exit(0);
+});
+
+/*rl.question('quit', (answer)=>{
+    process.exit(0);
+})*/
