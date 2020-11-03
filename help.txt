@@ -1,0 +1,7 @@
+type `bot!` before using any of these commands
+`talk <Message>`: Send a message to me, the bot!
+`rules`: Get a list of the rules!
+`help`: Print out THIS list!
+`lmgtfy [user]`: generate a Let Me Google That For You Link!
+    If you supply a user, it will ping them it!
+`admin`: See and access admin commands. ADMINS ONLY LMAO.
