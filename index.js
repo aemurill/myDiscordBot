@@ -1,14 +1,12 @@
 "use strict";
 const tools = require('./tools.js');
-
-
-// Instantiate a DialogFlow client.
-const dialogflow = require('dialogflow');
 const util = require('util');
-//const dialogflowClient = new dialogflow.SessionsClient();
-// Define session path
-const sessionID = 'discordbot';
-//const sessionPath = dialogflowClient.sessionPath(process.env.PROJECT_ID, 'discordbot');
+const dotenv = require('dotenv');
+dotenv.config();
+
+/* INIT DIALOGFLOW */
+const dfi = require('./dialogflowIntegration.js');
+/* END INIT DIALOGFLOW */
 
 const Discord = require('discord.js');
 const discordClient = new Discord.Client();
@@ -21,6 +19,7 @@ const rl = readline.createInterface({
   prompt: 'CMD>'
 });
 
+//FILE CONSTS
 const CONFIG_FILENAME = "config.json";
 const BANLIST_FILENAME = "banlist.json";
 const RULES_TEXT_FILENAME = "rules.txt";
@@ -51,6 +50,10 @@ if(Object.entries(banlist).length === 0)
   tools.writeStringAsJsonToFile(BANLIST_FILENAME, banlist);
 banlist = tools.readJsonFromFileAsString(BANLIST_FILENAME);
 
+function loadBanList(){
+  banmap = new Map(Object.entries(banlist));
+}
+
 loadBanList();
 
 function updateBanlist() {
@@ -61,21 +64,58 @@ function updateBanlist() {
   tools.writeStringAsJsonToFile(BANLIST_FILENAME, banlist);
 }
 
-function loadBanList(){
-  banmap = new Map(Object.entries(banlist));
+async function pingOwner(guild, text){
+  //var owner = guild.owner;
+  //return discordClient.users.fetch(guild.ownerID).send(text);
+  //return guild.owner.user.send(text);
+  console.log("pingowner: ")
+  console.log(guild.members.cache ? "exists" : "does not exist")
+  console.log("ownerID: ")
+  console.log(guild.ownerID ? "exists" : "does not exist")
+
+  await guild.members.fetch(guild.ownerID).then(async () => {
+    //console.log(guild.members.cache.get(guild.ownerID));
+    await guild.owner.user.send(text);
+    console.log("Sending: ["+text+"] to " + guild.owner.user.username)
+    
+  }).catch(error => {
+    console.error(error);
+  })
+  //guild.owner.send(text);
 }
+
+async function pingOwners(func, text){
+  discordClient.guilds.cache.map(async (guild) => {
+    console.log("pingownerS")
+    //console.log(guild)
+    await pingOwner(guild, text)
+    if(func!= null){
+      //const promise = pingOwner(guild, text);
+      //promise.then(function(value){
+        func();
+      //});
+    }
+  })
+}
+
+//DISCORD LOGIN
+discordClient.login(process.env.DISCORD_TOKEN).then(()=>{
+  discordClient.user.setActivity("Use \`"+config.prefix+"\` help for assistance!"); 
+  console.log("Logging In")
+});
 
 
 discordClient.on('ready', () => {
   console.log('Ready!');
+  pingOwners(null, HORZ_LINE_JAGGED+"\nI'm back online!");
   console.info(`Logged in as ${discordClient.user.tag}!`);
   console.info(`Logged in as ${discordClient.user.username}!`);
 });
 
 discordClient.on('guildCreate',guild=>{
+  console.log("created")
   pingOwner(guild, "Thanks for letting me join!");
 });
-
 
 var mContent
 var mContentSplit;
@@ -111,6 +151,11 @@ function printFileToDiscord(m, mode, filename){
   else sendMsg(tools.getFileAsString(filename), m);
 }
 
+function remove(username, text) {
+  return text.replace('@' + username + ' ', '')
+    .replace(process.env.DISCORD_PREFIX + ' ', '');
+}
+
 function isAuthorAdmin(m){
   return m.member.hasPermission('ADMINISTRATOR');
 }
@@ -123,25 +168,49 @@ function commandRules(m, mode){
  *  HELP
  */
 
-function commandHelp(m, mode){
-  printFileToDiscord(m, mode, HELP_TEXT_FILENAME);
+function commandHelp(m){
+  sendReply("type \`"+config.prefix+"\` before using any of these commands",m);
+  printFileToDiscord(m, 0, HELP_TEXT_FILENAME);
 }
 
 /*
  *  Talk with my Dialogflow Agent
  */
 
-function commandTalk(m){
+async function commandTalk(m){
+  const sessionID = 'discordbot';
+  var result = 0;
+  var value = 0;
   if(mArgs.length > 0){
     var message = argsAsString(0);
     console.log("msg:"+message);
-    detectTextIntent(process.env.PROJECT_ID, sessionID, [message], 
-      config.languageCode, m);
+    result = await dfi.detectTextIntent(process.env.PROJECT_ID, sessionID, [message], 
+                                    config.languageCode, m, context);
+    context = result.context;   
+    value = result.value;
+    var fulfillM = result.message;
+    console.log("Value: "+value);
     console.log("TT:"+context);
+    dfi.printFulfillmentMessages(fulfillM, sendReply, sendMsg, m)
   }else{
     return sendMsg('You didn\'t say anything?', m);
   }
+
+  switch(value){
+    case 1:
+      commandRules(m, 0);
+      break;
+    case 2:
+      printFileToDiscord(m, 0, TALKING_POINTS_TEXT_FILENAME);
+      break;
+    case -2:
+      sendMsg('Sorry, an error occured.', m);
+      break;
+    case 0:
+      break;
+  }
 }
+
 
 /*
  *  Let Me Google That For You
@@ -173,6 +242,8 @@ function commandLMGTFY(m){
 /*
  *  MAIN CONFIG COMMAND CODE
  */
+//TODO: implement better command handling  https://discordjs.guide/command-handling/
+
 
 function commandAdmin(m){
   if(!isFromRoleMember(m, config.reqrole) && !isAuthorAdmin(m)){
@@ -301,13 +372,14 @@ discordClient.on('message', m => {
     case 'help':
       //return sendReply('Use \`'+config.prefix+
       //  'talk <Message>\` to send a message to me!', m);
-      commandHelp(m, 1);
+      commandHelp(m);
       break;
     case 'rules':
       commandRules(m, 1);
       break;
     case 'talk':
-      commandTalk(m);
+      //commandTalk(m);
+      sendReply("Sorry this is disabled", m);
       break;
     case 'lmgtfy':
       commandLMGTFY(m);
@@ -344,7 +416,7 @@ function isSameSender(message){
 }
 
 function isPinged(message){
-  var isMentioned = message.isMemberMentioned(discordClient.user);
+  var isMentioned = message.mentions.has(discordClient.user);
   //apparently isMemberMentioned will be depreciated soon
   return isMentioned;
 }
@@ -368,149 +440,12 @@ function getUserFromMention(mention) {
 	}
 }
 
-async function detectIntent(projectId, sessionId, sessionClient, query, 
-    contexts, languageCode) {
-  // The path to identify the agent that owns the created intent.
-  const sessionPath = sessionClient.sessionPath(projectId, sessionId);
-
-  // The text query request.
-  const request = {
-    session: sessionPath,
-    queryInput: {
-      text: {
-        text: query,
-        languageCode: languageCode,
-      },
-    },
-  };
-
-  if (contexts && contexts.length > 0) {
-    request.queryParams = {
-      contexts: contexts,
-    };
-  }
-
-  //console.log("asfs: "+util.inspect(request, {depth: null}));
-  const responses = await sessionClient.detectIntent(request);
-  //console.log("adf"+util.inspect(responses[0], {depth:null}));
-  return responses[0];
-}
-
-function printFulfillmentMessages(fulfillmentMessages, m){
-  //console.log("fm:"+util.inspect(fulfillmentMessages, {depth:null}));
-  var ctr = 0;
-  for(var i = 0; i < fulfillmentMessages.length; i++){
-    var item = fulfillmentMessages[i];
-    //console.log(item);
-    if(item.hasOwnProperty('text')){
-      var string = item.text.text[0];
-      console.log("str:"+ string);
-      if(ctr == 0){
-        sendReply(string, m);
-        ctr++;
-      }
-      else sendMsg(string, m);
-    }
-  }
-}
-
-function dialogflowTalkingPoints(m){
-  printFileToDiscord(m, 0, TALKING_POINTS_TEXT_FILENAME);
-}
-
-async function executeQueries(projectId, sessionId, sessionClient, 
-                              queries, languageCode, message) {
-  // Keeping the context across queries let's us simulate an ongoing 
-  // conversation with the bot
-
-  //let context;
-  let intentResponse;
-  for (const query of queries) {
-    try {
-      console.log(`Sending Query: ${query}`);
-      intentResponse = 
-        await detectIntent(projectId, sessionId, sessionClient, 
-                          query, context, languageCode);
-      console.log('Detected intent');
-      printFulfillmentMessages(intentResponse.queryResult.fulfillmentMessages,
-         message);
-      //console.log(
-      //  `Fulfillment Text: ${intentResponse.queryResult.fulfillmentText}`
-      //);
-      //message.channel.send(`${intentResponse.queryResult.fulfillmentText}`);
-      var flag = intentResponse.queryResult.intent.displayName;
-      console.log("queryResult: "+util.inspect(intentResponse.queryResult,
-        {depth:null}));
-      switch(flag){
-        case 'WhatAreTheRules':
-            commandRules(message, 0);
-            break
-        case 'WhatElseCanIDo':
-            dialogflowTalkingPoints(message);
-            break
-      }
-      // Use the context from this response for next queries
-      context = intentResponse.queryResult.outputContexts;
-      console.log("output context: " + util.inspect(context, {depth:null}));
-    } catch (error) {
-      console.log(error);
-    }
-  }
-}
-
-function detectTextIntent(projectId, sessionId, queries, languageCode, message){
-  // [START dialogflow_detect_intent_text]
-  // projectId: ID of the GCP project where Dialogflow agent is deployed
-  // sessionId: Random number or hashed user identifier
-  // queries: A set of sequential queries to be send to Dialogflow agent for
-  //    Intent Detection
-  // languageCode: Indicates the language Dialogflow agent should use to 
-  //    detect intents
-
-  // Instantiates a session client
-  const sessionClient = new dialogflow.SessionsClient();
-  executeQueries(projectId, sessionId, sessionClient, queries, languageCode,
-     message);
-  // [END dialogflow_detect_intent_text]
-}
-
-
-function remove(username, text) {
-  return text.replace('@' + username + ' ', '')
-    .replace(process.env.DISCORD_PREFIX + ' ', '');
-}
-
-function close(){
+/* CMD PROMPT START */
+function close(){  
   rl.close();
+  console.log("goodbye!")
   process.exit(0);
 }
-
-function pingOwner(guild, text){
-  var owner = guild.owner;
-  return discordClient.users.get(owner.id).send(text);
-}
-
-function pingOwners(func, text){
-  var guildArray = discordClient.guilds.array();
-  console.log(guildArray);
-  var ctr = 0;
-  for(var guild of guildArray){
-    ctr++;
-    if(ctr < guildArray.length) pingOwner(guild, text);
-    else{
-      const promise = pingOwner(guild, text);
-      if(func!= null){
-        promise.then(function(value){
-          func();
-        });
-      }
-    }
-  }
-}
-
-discordClient.login(process.env.DISCORD_TOKEN).then(()=>{
-  pingOwners(null, "<><><><><><>\nI'm back online!");
-});
 
 rl.prompt();
 
@@ -530,9 +465,13 @@ rl.on('line', (line) => {
   }
   rl.prompt();
 }).on('close', () => {
-  pingOwners(close, "<><><><><><>\nI'm shutting down for the time being, sorry for any inconvenience");        
+    pingOwners(close, HORZ_LINE_JAGGED+"\nI'm shutting down for the time being, sorry for any inconvenience").catch(error => {
+    console.error(error);
+  });        
 });
 
 /*rl.question('quit', (answer)=>{
     process.exit(0);
 })*/
+
+/* END CMD PROMPT */

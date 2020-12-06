@@ -1,9 +1,10 @@
 const fs = require('fs');
 
-exports.getFileAsString = getFileAsString;
-exports.writeStringAsJsonToFile = writeStringAsJsonToFile;
-exports.readJsonFromFileAsString = readJsonFromFileAsString;
-
+module.exports = {
+    getFileAsString: getFileAsString,
+    writeStringAsJsonToFile: writeStringAsJsonToFile,
+    readJsonFromFileAsString: readJsonFromFileAsString,
+}
 
 function getFileAsString(filename){
     var text = "There are no rules!";

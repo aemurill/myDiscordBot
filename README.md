@@ -1,4 +1,4 @@
-🎙 dialogflow-to-discord
+🎙 myDiscordBot
 ========================
 
 Easily add Discord bot integration to your Dialogflow project.
@@ -9,9 +9,6 @@ You'll need to set 5 environment variables:
 - `PROJECT_ID` should be set to your project ID in Google Cloud
 - `DISCORD_TOKEN` should be set to your bot's token
 - `DISCORD_PREFIX` should be set to the prefix you want your bot to activate with (bot will also work with DMs and @ mentions)
-- `DISCORD_HELP_MESSAGE` is what the bot will reply to the `help` command
-
-Use `source ./script.sh` to set the above automatically.
 
 Then, just run `node index.js` when you want to start the bot.
 
