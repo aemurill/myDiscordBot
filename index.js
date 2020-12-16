@@ -1,4 +1,5 @@
 "use strict";
+const fs = require('fs');
 const tools = require('./tools.js');
 const util = require('util');
 const dotenv = require('dotenv');
@@ -64,6 +65,7 @@ function updateBanlist() {
   tools.writeStringAsJsonToFile(BANLIST_FILENAME, banlist);
 }
 
+//Needs fix
 async function pingOwner(guild, text){
   //var owner = guild.owner;
   //return discordClient.users.fetch(guild.ownerID).send(text);
@@ -98,12 +100,26 @@ async function pingOwners(func, text){
   })
 }
 
+//Commands Modularization
+discordClient.commands = new Discord.Collection();
+try{
+  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+  for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    client.commands.set(command.name, command);
+  }
+}
+catch(err){
+  if(err.code == 'ENOENT'){
+    console.log(`No commands found`);
+  }
+}
+
 //DISCORD LOGIN
 discordClient.login(process.env.DISCORD_TOKEN).then(()=>{
   discordClient.user.setActivity("Use \`"+config.prefix+"\` help for assistance!"); 
   console.log("Logging In")
 });
-
 
 discordClient.on('ready', () => {
   console.log('Ready!');
@@ -244,7 +260,7 @@ function commandLMGTFY(m){
  */
 //TODO: implement better command handling  https://discordjs.guide/command-handling/
 
-
+//m.member.roles.find is not a function
 function commandAdmin(m){
   if(!isFromRoleMember(m, config.reqrole) && !isAuthorAdmin(m)){
     printInvalidAccess(m); 
@@ -388,7 +404,7 @@ discordClient.on('message', m => {
       commandAdmin(m);
       break;
     case 'test':
-      sendMsg("THIS IS A TEST FUNCTION, WEIRD SHIT MIGHT HAPPEN", message);
+      sendMsg("THIS IS A TEST FUNCTION, WEIRD SHIT MIGHT HAPPEN", m);
       pingOwner(m.guild, "Thanks for letting me join!");
       break;
     default: //DEFAULT FALLBACK
