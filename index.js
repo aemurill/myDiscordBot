@@ -1,13 +1,10 @@
 "use strict";
 const fs = require('fs');
 const tools = require('./tools.js');
+const consts = require('./consts.js');
 const util = require('util');
 const dotenv = require('dotenv');
 dotenv.config();
-
-/* INIT DIALOGFLOW */
-const dfi = require('./dialogflowIntegration.js');
-/* END INIT DIALOGFLOW */
 
 const Discord = require('discord.js');
 const discordClient = new Discord.Client();
@@ -21,18 +18,11 @@ const rl = readline.createInterface({
 });
 
 //FILE CONSTS
-const CONFIG_FILENAME = "config.json";
+//const CONFIG_FILENAME = "config.json";
 const BANLIST_FILENAME = "banlist.json";
-const RULES_TEXT_FILENAME = "rules.txt";
+//const RULES_TEXT_FILENAME = "rules.txt";
 const TALKING_POINTS_TEXT_FILENAME = "talkingpoints.txt";
-const HELP_TEXT_FILENAME = "help.txt";
-
-const HORZ_LINE_SINGLE = 
-  "--------------------------------------------------------------";
-const HORZ_LINE_DOUBLE = 
-  "==============================================================";
-  const HORZ_LINE_JAGGED = 
-  "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>";
+//const HELP_TEXT_FILENAME = "help.txt";
 
 var config = {};
 var default_config = {
@@ -44,8 +34,8 @@ var banlist = {};
 var banmap = new Map();
 
 if(Object.entries(config).length === 0)
-  tools.writeStringAsJsonToFile(CONFIG_FILENAME, default_config);
-config = tools.readJsonFromFileAsString(CONFIG_FILENAME);
+  tools.writeStringAsJsonToFile(consts.CONFIG_FILENAME, default_config);
+config = tools.readJsonFromFileAsString(consts.CONFIG_FILENAME);
 
 if(Object.entries(banlist).length === 0)
   tools.writeStringAsJsonToFile(BANLIST_FILENAME, banlist);
@@ -78,7 +68,7 @@ async function pingOwner(guild, text){
   await guild.members.fetch(guild.ownerID).then(async () => {
     //console.log(guild.members.cache.get(guild.ownerID));
     await guild.owner.user.send(text);
-    console.log("Sending: ["+text+"] to " + guild.owner.user.username)
+    console.log("Sending: \n["+text+"] to " + guild.owner.user.username)
     
   }).catch(error => {
     console.error(error);
@@ -125,7 +115,7 @@ discordClient.login(process.env.DISCORD_TOKEN).then(()=>{
 
 discordClient.on('ready', () => {
   console.log('Ready!');
-  pingOwners(null, HORZ_LINE_JAGGED+"\nI'm back online!");
+  pingOwners(null, tools.HORZ_LINE_JAGGED+"\nI'm back online!");
   console.info(`Logged in as ${discordClient.user.tag}!`);
   console.info(`Logged in as ${discordClient.user.username}!`);
 });
@@ -142,7 +132,7 @@ var mArgs;
 
 let context;
 
-function sendReply(text, message){
+/*function sendReply(text, message){
   console.log(HORZ_LINE_JAGGED+"\nSending Reply:");
   console.log(text);
   if(message.channel.type == "dm"){
@@ -176,26 +166,26 @@ function remove(username, text) {
 
 function isAuthorAdmin(m){
   return m.member.hasPermission('ADMINISTRATOR');
-}
+}*/
 
-function commandRules(m, mode){
-  printFileToDiscord(m, mode, RULES_TEXT_FILENAME);
-}
+/*function commandRules(m, mode){
+  tools.printFileToDiscord(m, mode, RULES_TEXT_FILENAME);
+}*/
 
 /*
  *  HELP
  */
 
-function commandHelp(m){
+/*function commandHelp(m){
   sendReply("type \`"+config.prefix+"\` before using any of these commands",m);
   printFileToDiscord(m, 0, HELP_TEXT_FILENAME);
-}
+}*/
 
 /*
  *  Talk with my Dialogflow Agent
  */
 
-async function commandTalk(m){
+/*async function commandTalk(m){
   const sessionID = 'discordbot';
   var result = 0;
   var value = 0;
@@ -209,9 +199,9 @@ async function commandTalk(m){
     var fulfillM = result.message;
     console.log("Value: "+value);
     console.log("TT:"+context);
-    dfi.printFulfillmentMessages(fulfillM, sendReply, sendMsg, m)
+    dfi.printFulfillmentMessages(fulfillM, tools.sendReply, tools.sendMsg, m)
   }else{
-    return sendMsg('You didn\'t say anything?', m);
+    return tools.sendMsg('You didn\'t say anything?', m);
   }
 
   switch(value){
@@ -219,15 +209,15 @@ async function commandTalk(m){
       commandRules(m, 0);
       break;
     case 2:
-      printFileToDiscord(m, 0, TALKING_POINTS_TEXT_FILENAME);
+      tools.printFileToDiscord(m, 0, TALKING_POINTS_TEXT_FILENAME);
       break;
     case -2:
-      sendMsg('Sorry, an error occured.', m);
+      tools.sendMsg('Sorry, an error occured.', m);
       break;
     case 0:
       break;
   }
-}
+}*/
 
 
 /*
@@ -242,16 +232,16 @@ function commandLMGTFY(m){
       index = 1;
       target = getUserFromMention(mArgs[0]);
     }        
-    var string = argsAsString(index);
+    var string = tools.argsAsString(index);
     string = "https://lmgtfy.com/?q=" + string;
     string = encodeURI(string);
 
     if(target != undefined){
-      return sendPing('Let Me Google That For You: ' + string,m, target);  
+      return tools.sendPing('Let Me Google That For You: ' + string,m, target);  
     }
-    return sendReply('Let Me Google That For You: ' + string,m);
+    return tools.sendReply('Let Me Google That For You: ' + string,m);
   }else{
-    return sendReply('Do \`lmgtfy <Query>\`, or \`lmgtfy @someone <Query>\`.'+
+    return tools.sendReply('Do \`lmgtfy <Query>\`, or \`lmgtfy @someone <Query>\`.'+
       '\nYou put in an empty query, dude.', m);
   }
 }
@@ -264,7 +254,7 @@ function commandLMGTFY(m){
 
 //m.member.roles.find is not a function
 function commandAdmin(m){
-  if(!isFromRoleMember(m, config.reqrole) && !isAuthorAdmin(m)){
+  if(!tools.isFromRoleMember(m, config.reqrole) && !tools.isAuthorAdmin(m)){
     printInvalidAccess(m); 
     return;
   }
@@ -283,18 +273,18 @@ function commandAdmin(m){
             if(value == undefined) break;
             doDefault2 = false;
             config.prefix = value;
-            tools.writeStringAsJsonToFile(CONFIG_FILENAME, config);
+            tools.writeStringAsJsonToFile(consts.CONFIG_FILENAME, config);
             break;
           case 'reqrole':
             if(value == undefined) break;
             doDefault2 = false;
             config.reqrole = value;
-            tools.writeStringAsJsonToFile(CONFIG_FILENAME, config);
+            tools.writeStringAsJsonToFile(consts.CONFIG_FILENAME, config);
             break;
         }
         if(doDefault2){
           doPrintDone = false;
-          sendReply("Use as \`config set <option> <value>\`",m);
+          tools.sendReply("Use as \`config set <option> <value>\`",m);
         }
         break;
     case 'botban':
@@ -316,27 +306,27 @@ function commandAdmin(m){
         }
         break;
     case 'default':        
-        tools.writeStringAsJsonToFile(CONFIG_FILENAME, default_config);
-        tools.readJsonFromFileAsString(CONFIG_FILENAME, default_config);
+        tools.writeStringAsJsonToFile(consts.CONFIG_FILENAME, default_config);
+        tools.readJsonFromFileAsString(consts.CONFIG_FILENAME, default_config);
         console.log(config);
         banmap = new Map();
         updateBanlist();
         console.log(banlist);
         break;
     default:
-        printFileToDiscord(m, 1, "config_help.txt");
+        tools.printFileToDiscord(m, 1, "config_help.txt");
         doPrintDone = false;
   }
   if(doPrintDone){
-    sendMsg('Done!', m);
+    tools.sendMsg('Done!', m);
   }
 }
 
 function printInvalidAccess(m){
-  return sendReply("Only admins can use \`config\`!", m);
+  return tools.sendReply("Only admins can use \`config\`!", m);
 }
 
-function argsAsString(index){
+/*function argsAsString(index){
   var string = "";
   for(var i = index; i < mArgs.length; i++){
     string += mArgs[i] + " ";
@@ -348,7 +338,7 @@ function argsAsString(index){
 function isFromRoleMember(m, role){
   if(role == null) return true;
   return m.member.roles.find(r => r.name === role);
-}
+}*/
 
 function isUserBanned(m){
   loadBanList();
@@ -362,9 +352,9 @@ function isUserBanned(m){
 discordClient.on('message', m => {
   if (isUserBanned(m)) return;
   if (isSameSender(m)) return;
-  console.log("\n\n"+HORZ_LINE_DOUBLE);
+  console.log("\n\n"+tools.HORZ_LINE_DOUBLE);
   console.log('Accepted Message:'+m.content);
-  console.log(HORZ_LINE_SINGLE);
+  console.log(tools.HORZ_LINE_SINGLE);
   mContent = m.content;
   if (isInvokedViaPrefix(m)) {
     //check if invoked with a prefix
@@ -374,7 +364,7 @@ discordClient.on('message', m => {
     //if not invoked with a prefix in a non-DM, don't do anything.
     if(isPinged(m)){
       //print message because we want prefix, not pings.
-      return sendReply('Send me messages using \`'+ config.prefix +
+      return tools.sendReply('Send me messages using \`'+ config.prefix +
         '\`. Just don\'t ping me!', m);
     }
     return;
@@ -388,7 +378,7 @@ discordClient.on('message', m => {
   console.log("Command:"+mCommand);
   console.log("Args:"+mArgs);
 
-  console.log(HORZ_LINE_SINGLE);
+  console.log(tools.HORZ_LINE_SINGLE);
   //check if modular command
   if (discordClient.commands.has(mCommand)){
     //if (!discordClient.commands.has(mCommand)) return;
@@ -402,18 +392,19 @@ discordClient.on('message', m => {
   }
   //check if non-modular command
   switch(mCommand){
-    case 'help':
+    /*case 'help':
       //return sendReply('Use \`'+config.prefix+
       //  'talk <Message>\` to send a message to me!', m);
       commandHelp(m);
-      break;
-    case 'rules':
+      break;*/
+    /*case 'rules':
       commandRules(m, 1);
       break;
-    case 'talk':
+      */
+    /*case 'talk':
       //commandTalk(m);
-      sendReply("Sorry this is disabled", m);
-      break;
+      tools.sendReply("Sorry this is disabled", m);
+      break;*/
     case 'lmgtfy':
       commandLMGTFY(m);
       break;
@@ -421,11 +412,11 @@ discordClient.on('message', m => {
       commandAdmin(m);
       break;
     case 'test':
-      sendMsg("THIS IS A TEST FUNCTION, WEIRD SHIT MIGHT HAPPEN", m);
+      tools.sendMsg("THIS IS A TEST FUNCTION, WEIRD SHIT MIGHT HAPPEN", m);
       pingOwner(m.guild, "Thanks for letting me join!");
       break;
     default: //DEFAULT FALLBACK
-      return sendReply('use \`'+config.prefix + ' help\` to get help!', m);
+      return tools.sendReply('use \`'+config.prefix + ' help\` to get help!', m);
   }
 });
 
@@ -498,7 +489,7 @@ rl.on('line', (line) => {
   }
   rl.prompt();
 }).on('close', () => {
-    pingOwners(close, HORZ_LINE_JAGGED+"\nI'm shutting down for the time being, sorry for any inconvenience").catch(error => {
+    pingOwners(close, tools.HORZ_LINE_JAGGED+"\nI'm shutting down for the time being, sorry for any inconvenience").catch(error => {
     console.error(error);
   });        
 });
