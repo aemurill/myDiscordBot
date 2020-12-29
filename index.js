@@ -106,13 +106,15 @@ try{
   const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
   for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
-    client.commands.set(command.name, command);
+    discordClient.commands.set(command.name, command);
+    console.log(command.name + ' found!');
   }
 }
 catch(err){
   if(err.code == 'ENOENT'){
     console.log(`No commands found`);
   }
+  else console.log(err)
 }
 
 //DISCORD LOGIN
@@ -365,10 +367,13 @@ discordClient.on('message', m => {
   console.log(HORZ_LINE_SINGLE);
   mContent = m.content;
   if (isInvokedViaPrefix(m)) {
+    //check if invoked with a prefix
     mContent = mContent.slice(config.prefix.length); 
     mContent = mContent.trim();
   }else if(!isInvokedViaDM(m)){
+    //if not invoked with a prefix in a non-DM, don't do anything.
     if(isPinged(m)){
+      //print message because we want prefix, not pings.
       return sendReply('Send me messages using \`'+ config.prefix +
         '\`. Just don\'t ping me!', m);
     }
@@ -384,6 +389,18 @@ discordClient.on('message', m => {
   console.log("Args:"+mArgs);
 
   console.log(HORZ_LINE_SINGLE);
+  //check if modular command
+  if (discordClient.commands.has(mCommand)){
+    //if (!discordClient.commands.has(mCommand)) return;
+    try {
+      discordClient.commands.get(mCommand).execute(m, mArgs);
+      return;
+    } catch (error) {
+      console.error(error);
+      m.reply('there was an error trying to execute that command!');
+    }
+  }
+  //check if non-modular command
   switch(mCommand){
     case 'help':
       //return sendReply('Use \`'+config.prefix+
