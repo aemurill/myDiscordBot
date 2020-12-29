@@ -72,10 +72,10 @@ function sendReply(text, message){
     return m.member.hasPermission('ADMINISTRATOR');
   }
 
-  function argsAsString(index){
+  function argsAsString(index, args){
     var string = "";
-    for(var i = index; i < mArgs.length; i++){
-      string += mArgs[i] + " ";
+    for(var i = index; i < args.length; i++){
+      string += args[i] + " ";
     }
   return string;
   //return mMini.substring(mMini.indexOf(mArgs[0]), mContent.length);
@@ -84,6 +84,25 @@ function sendReply(text, message){
   function isFromRoleMember(m, role){
     if(role == null) return true;
     return m.member.roles.find(r => r.name === role);
+  }
+
+  function isMention(mention){
+    var state = mention.startsWith('<@') && mention.endsWith('>');
+    return state;
+  }
+
+  function getUserFromMention(m, mention) {
+	if (!mention) return undefined;
+
+	if (isMention(mention)) {
+		mention = mention.slice(2, -1);
+
+		if (mention.startsWith('!') || mention.startsWith('&')) {
+            mention = mention.slice(1);
+            return m.mentions.users.get(mention);
+		}
+    console.log("failed" + mention);
+    }
   }
 
   module.exports = {
@@ -98,6 +117,8 @@ function sendReply(text, message){
     isAuthorAdmin,
     argsAsString,
     isFromRoleMember,
+    isMention,
+    getUserFromMention,
     HORZ_LINE_SINGLE,
     HORZ_LINE_DOUBLE,
     HORZ_LINE_JAGGED

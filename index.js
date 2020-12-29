@@ -224,7 +224,7 @@ function isAuthorAdmin(m){
  *  Let Me Google That For You
  */
 
-function commandLMGTFY(m){
+/*function commandLMGTFY(m){
   var index = 0;
   var target;
   if(mArgs.length > 0){
@@ -244,7 +244,7 @@ function commandLMGTFY(m){
     return tools.sendReply('Do \`lmgtfy <Query>\`, or \`lmgtfy @someone <Query>\`.'+
       '\nYou put in an empty query, dude.', m);
   }
-}
+}*/
 
 
 /*
@@ -405,9 +405,9 @@ discordClient.on('message', m => {
       //commandTalk(m);
       tools.sendReply("Sorry this is disabled", m);
       break;*/
-    case 'lmgtfy':
+    /*case 'lmgtfy':
       commandLMGTFY(m);
-      break;
+      break;*/
     case 'admin':
       commandAdmin(m);
       break;
@@ -445,24 +445,24 @@ function isPinged(message){
   return isMentioned;
 }
 
-function isMention(mention){
+/*function isMention(mention){
   var state = mention.startsWith('<@') && mention.endsWith('>');
   return state;
-}
+}*/
 
-function getUserFromMention(mention) {
+/*function getUserFromMention(m, mention) {
 	if (!mention) return undefined;
 
-	if (isMention(mention)) {
+	if (tools.isMention(mention)) {
 		mention = mention.slice(2, -1);
 
 		if (mention.startsWith('!') || mention.startsWith('&')) {
       mention = mention.slice(1);
-      return discordClient.users.get(mention);
+      return m.mentions.users.get(mention);
 		}
     console.log("failed" + mention);
 	}
-}
+}*/
 
 /* CMD PROMPT START */
 function close(){  
