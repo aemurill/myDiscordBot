@@ -10,6 +10,7 @@ const Discord = require('discord.js');
 const discordClient = new Discord.Client();
 
 const readline = require('readline');
+const { create } = require('domain');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -120,9 +121,24 @@ discordClient.on('ready', () => {
   console.info(`Logged in as ${discordClient.user.username}!`);
 });
 
+function createRoles(guild){  
+  //guild.roles.create();
+  for(const element of consts.ID_ROLES){
+    guild.roles.create({
+      data: {
+        name: element
+      },
+      reason: 'Bot is creating roles'
+    })
+      .then(console.log)
+      .catch(console.error)
+  }
+}
+
 discordClient.on('guildCreate',guild=>{
   console.log("created")
   pingOwner(guild, "Thanks for letting me join!");
+  createRoles(guild);
 });
 
 var mContent
@@ -383,7 +399,12 @@ discordClient.on('message', m => {
   if (discordClient.commands.has(mCommand)){
     //if (!discordClient.commands.has(mCommand)) return;
     try {
-      discordClient.commands.get(mCommand).execute(m, mArgs);
+      let command = discordClient.commands.get(mCommand)
+      if (command.guildOnly && m.channel.type === 'dm') {
+        return m.reply('I can\'t execute that command inside DMs!');
+      }
+
+      command.execute(m, mArgs);
       return;
     } catch (error) {
       console.error(error);
@@ -409,12 +430,14 @@ discordClient.on('message', m => {
       commandLMGTFY(m);
       break;*/
     case 'admin':
-      commandAdmin(m);
+      createRoles(m.guild);
+      //commandAdmin(m);
       break;
-    case 'test':
+    /*case 'test':
       tools.sendMsg("THIS IS A TEST FUNCTION, WEIRD SHIT MIGHT HAPPEN", m);
       pingOwner(m.guild, "Thanks for letting me join!");
       break;
+      */
     default: //DEFAULT FALLBACK
       return tools.sendReply('use \`'+config.prefix + ' help\` to get help!', m);
   }

@@ -105,6 +105,14 @@ function sendReply(text, message){
     }
   }
 
+  //feed me roles
+  function getRoleByValue(map, searchValue) {
+    for (let [key, value] of map.entries()) {
+      if (value.name === searchValue)
+        return value;
+    }
+  }
+
   module.exports = {
     getFileAsString,
     writeStringAsJsonToFile,
@@ -119,6 +127,7 @@ function sendReply(text, message){
     isFromRoleMember,
     isMention,
     getUserFromMention,
+    getRoleByValue,
     HORZ_LINE_SINGLE,
     HORZ_LINE_DOUBLE,
     HORZ_LINE_JAGGED
