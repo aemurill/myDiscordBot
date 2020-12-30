@@ -75,7 +75,8 @@ function sendReply(text, message){
   function argsAsString(index, args){
     var string = "";
     for(var i = index; i < args.length; i++){
-      string += args[i] + " ";
+      string += args[i];
+      if(i < args.length - 1) string += " ";
     }
   return string;
   //return mMini.substring(mMini.indexOf(mArgs[0]), mContent.length);
@@ -108,6 +109,7 @@ function sendReply(text, message){
   //feed me roles
   function getRoleByValue(map, searchValue) {
     for (let [key, value] of map.entries()) {
+      //console.log('['+value.name+']');console.log('['+searchValue+']')
       if (value.name === searchValue)
         return value;
     }

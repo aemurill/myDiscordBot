@@ -60,7 +60,8 @@ function error(message){
 
 function toggleRole(option, message){
 	//tools.sendReply(option + ' is what you selected',message)
-	
+	console.log(option);
+
 	var role = (consts.ID_ROLES).includes(option);
 	if(role != undefined){
 		message.guild.fetch().then(result=>{
@@ -76,13 +77,13 @@ function toggleRole(option, message){
 					let hasRole = tools.getRoleByValue(message.member.roles.cache, option)
 					if(hasRole != undefined){ //HAS ROLE
 						message.member.roles.remove(myRole.id).then(result => {
-							tools.sendReply(option + ' has been removed to your roles!',message)
+							tools.sendReply(option + ' has been removed from your roles!',message)
 						}).catch(error => {
 							console.error(error); error(message);
 						});		
 					}else{ //DOES NOT HAVE ROLE
 						message.member.roles.add(myRole.id).then(result => {
-							tools.sendReply(option + ' has been added from your roles!',message)
+							tools.sendReply(option + ' has been added to your roles!',message)
 						}).catch(error =>{
 							console.error(error); error(message);
 						});		
@@ -112,12 +113,12 @@ module.exports = {
 	description: 'Use me to pick your pronouns and whatnot, yah?',
 	guildOnly: true,
 	execute(message, args) {		
-		if (args.length == 1){
+		if (args.length >= 1){
 			//role listing
 			if(!isNaN(args[0])) descRoles(args[0], message);
 			
 			//results
-			else toggleRole(args[0], message);
+			else toggleRole(tools.argsAsString(0, args), message);
 			return;
 		}
 		
