@@ -12,43 +12,47 @@ const consts = require('../consts.js');
  *  straight, lesbian, gay, bi, pan, queer, ace, demi 
  * 
  *  Can request other if necessary
+ * 
+ * 
+ * identityroles -> DO GENDER(1) SEXUALITY (2) OR IDENTITY (3)
+ * 
+ * identityroles n -> DO 1 2 3 4 5 6 7 for INDIVIDUAL SUBROLE
+ * 
+ * identityroles subrole -> toggles subrole directly
+ * 
+ * 
  */
 
 const cname = 'identityroles';
-const oReminder = 'Do \''+cname+' n\' where n is the option you have selected';
 
 function generateOptions(option){
 	var str = '';
 	for(const element of option){
 		console.log(element)
-		str+= ' '+element+'\n';
+		str+= '  • '+element+'\n';
 	}
 	return str;
 }
 
 function descRoles(number, message){
-	if(number == 1){
+	var x = function(message, subset){
 		tools.sendReply(
 			'Write out the option you would like to be added/removed:\n'+
-			generateOptions(consts.PRONOUNS) +
-			oReminder
+			generateOptions(consts[subset]) +
+			'Do \"' +cname+ ' <option>\" to toggle that role'
 			,message);
+	}
+
+	if(number == 1){
+		x(message,'PRONOUNS');
 		return;
 	}
 	if(number == 2){
-		tools.sendReply(
-			'Write out the option you would like to be added/removed:\n'+
-			generateOptions(consts.GENDERS) +
-			oReminder
-			,message);
+		x(message,'GENDERS');
 		return;
 	}
 	if(number == 3){
-		tools.sendReply(
-			'Write out the option you would like to be added/removed:\n'+
-			generateOptions(consts.SEXUALITIES) +
-			oReminder
-			,message);
+		x(message,'SEXUALITIES');
 		return;
 	}
 	improperUse(message);
@@ -70,6 +74,7 @@ function toggleRole(option, message){
 			.then(result => {
 				console.log(`fetched`);		
 				let myRole = tools.getRoleByValue(message.guild.roles.cache, option)		
+				if(myRole == undefined) throw new Error("Missing Role");
 				//let myRole = message.guild.roles.cache.get(role);
 				//tools.sendReply(`${myRole.name} is what you selected`,message);				
 				message.member.fetch()
@@ -85,26 +90,28 @@ function toggleRole(option, message){
 						message.member.roles.add(myRole.id).then(result => {
 							tools.sendReply(option + ' has been added to your roles!',message)
 						}).catch(error =>{
-							console.error(error); error(message);
+							console.error(error);// error(message);
 						});		
 					}
 				}).catch(error =>{
-					console.error(error); error(message);
+					console.error(error);// error(message);
 				});		
 			})
 			.catch(error =>{
-				console.error(error); error(message);
+				console.error(error);// error(message);
+				tools.sendReply('It would appear this role is not implemented or otherwise an error has occured.',message);
 			});		
 		}).catch(error =>{
-			console.error(error); error(message);
+			console.error(error);// error(message);
 		})
 	}
-	else improperUse(message);
+	else tools.sendReply('It would appear this role is not implemented or otherwise an error has occured.',message);
 }
 
 function improperUse(message){
 	tools.sendReply(
-		'Please use this role correctly, as instructed previously or just as \''+cname+'\''
+		'Please use this role correctly, as instructed previously or just as'
+		+ '\"help ' +cname+ '\".'
 		,message);		
 }
 
@@ -114,21 +121,21 @@ module.exports = {
 	guildOnly: true,
 	execute(message, args) {		
 		if (args.length >= 1){
-			//role listing
+			//NUMBER - role listing
 			if(!isNaN(args[0])) descRoles(args[0], message);
 			
-			//results
+			//NAN - Toggle role
 			else toggleRole(tools.argsAsString(0, args), message);
 			return;
 		}
 		
 		if (args.length == 0){
 			tools.sendReply(
-				'Pick which roles you\'d like to add:\n'+
-				'  1. Pronouns\n' +
-				'  2. Gender\n' +
-				'  3. Sexuality\n' +
-				oReminder
+				'Pick which role type you\'d like to view:\n'+
+				'  1) Pronouns\n' +
+				'  2) Gender\n' +
+				'  3) Sexuality\n' +
+				'Do \"' +cname+ ' <number>\" to see that list' 				
 				,message);
 			return;
 		}
@@ -136,3 +143,5 @@ module.exports = {
 		improperUse(message);
 	},
 };
+
+

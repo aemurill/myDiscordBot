@@ -430,7 +430,7 @@ discordClient.on('message', m => {
       commandLMGTFY(m);
       break;*/
     case 'admin':
-      createRoles(m.guild);
+      
       //commandAdmin(m);
       break;
     /*case 'test':
