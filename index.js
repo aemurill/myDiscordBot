@@ -122,17 +122,40 @@ discordClient.on('ready', () => {
 });
 
 function createRoles(guild){  
-  //guild.roles.create();
-  for(const element of consts.ID_ROLES){
-    guild.roles.create({
-      data: {
-        name: element
-      },
-      reason: 'Bot is creating roles'
+  guild.fetch().then(result=>{
+    console.log(`guild fetched`);		
+    guild.roles.fetch()
+    .then(result => {
+      console.log(`guild roles fetched`);		
+      for(const element of consts.ID_ROLES){ //GO OVER ROLE LIST
+        console.log(`Checking for `+element+`...`);		
+        let myRole = tools.getRoleByValue(guild.roles.cache, element)		
+        if(myRole == undefined){ //Missing Role
+          console.log(`missing `+element+` role, creating...`);		
+          //let myRole = message.guild.roles.cache.get(role);
+          //tools.sendReply(`${myRole.name} is what you selected`,message);				
+          guild.roles.create({
+            data: {
+              name: element
+            },
+            reason: 'Bot is creating roles'
+          })
+            .then(console.log)
+            .catch(error =>{
+              console.error(error);// error(message);
+            })
+        }
+        else{
+          console.log(`[`+element+`] exists!`);		
+        }
+      }
     })
-      .then(console.log)
-      .catch(console.error)
-  }
+    .catch(error =>{
+      console.error(error);// error(message);
+    });		
+  }).catch(error =>{
+    console.error(error);// error(message);
+  })  
 }
 
 discordClient.on('guildCreate',guild=>{
@@ -429,10 +452,10 @@ discordClient.on('message', m => {
     /*case 'lmgtfy':
       commandLMGTFY(m);
       break;*/
-    case 'admin':
+    /*case 'admin':
       
       //commandAdmin(m);
-      break;
+      break;*/
     /*case 'test':
       tools.sendMsg("THIS IS A TEST FUNCTION, WEIRD SHIT MIGHT HAPPEN", m);
       pingOwner(m.guild, "Thanks for letting me join!");
