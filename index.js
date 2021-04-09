@@ -171,42 +171,6 @@ var mArgs;
 
 let context;
 
-/*function sendReply(text, message){
-  console.log(HORZ_LINE_JAGGED+"\nSending Reply:");
-  console.log(text);
-  if(message.channel.type == "dm"){
-    message.channel.send(text);
-  }else{
-    message.reply(text);
-  }
-}
-
-function sendMsg(text, message){
-  console.log(HORZ_LINE_JAGGED+"\nSending Msg:");
-  console.log(text);
-  message.channel.send(text);
-}
-
-function sendPing(text, message, user){
-  console.log(HORZ_LINE_JAGGED+"\nSending Ping:");
-  console.log(text);
-  message.channel.send(user + ", " + text);
-}
-
-function printFileToDiscord(m, mode, filename){
-  if(mode == 1) sendReply(tools.getFileAsString(filename), m);
-  else sendMsg(tools.getFileAsString(filename), m);
-}
-
-function remove(username, text) {
-  return text.replace('@' + username + ' ', '')
-    .replace(process.env.DISCORD_PREFIX + ' ', '');
-}
-
-function isAuthorAdmin(m){
-  return m.member.hasPermission('ADMINISTRATOR');
-}*/
-
 /*function commandRules(m, mode){
   tools.printFileToDiscord(m, mode, RULES_TEXT_FILENAME);
 }*/
@@ -427,7 +391,10 @@ discordClient.on('message', m => {
         return m.reply('I can\'t execute that command inside DMs!');
       }
 
-      command.execute(m, mArgs);
+      if(mCommand == 'talk'){
+        command.execute(m, mArgs, discordClient)
+      }
+      else command.execute(m, mArgs);
       return;
     } catch (error) {
       console.error(error);
@@ -436,29 +403,8 @@ discordClient.on('message', m => {
   }
   //check if non-modular command
   switch(mCommand){
-    /*case 'help':
-      //return sendReply('Use \`'+config.prefix+
-      //  'talk <Message>\` to send a message to me!', m);
-      commandHelp(m);
-      break;*/
     /*case 'rules':
       commandRules(m, 1);
-      break;
-      */
-    /*case 'talk':
-      //commandTalk(m);
-      tools.sendReply("Sorry this is disabled", m);
-      break;*/
-    /*case 'lmgtfy':
-      commandLMGTFY(m);
-      break;*/
-    /*case 'admin':
-      
-      //commandAdmin(m);
-      break;*/
-    /*case 'test':
-      tools.sendMsg("THIS IS A TEST FUNCTION, WEIRD SHIT MIGHT HAPPEN", m);
-      pingOwner(m.guild, "Thanks for letting me join!");
       break;
       */
     default: //DEFAULT FALLBACK

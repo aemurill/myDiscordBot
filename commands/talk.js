@@ -2,7 +2,7 @@ const tools = require('../tools.js');
 const consts = require('../consts.js');
 const dfi = require('../dialogflowIntegration.js');
 
-async function commandTalk(m, mArgs){
+async function commandTalk(m, mArgs, discordClient){
     const sessionID = 'discordbot';
     var config = tools.readJsonFromFileAsString(consts.CONFIG_FILENAME);
     var result = 0;
@@ -29,7 +29,18 @@ async function commandTalk(m, mArgs){
   
     switch(value){
       case 1:
-        commandRules(m, 0);
+        try {
+          let command = discordClient.commands.get(mCommand)
+          if (command.guildOnly && m.channel.type === 'dm') {
+            return m.reply('I can\'t execute that command inside DMs!');
+          }
+    
+          command.execute(m, mArgs);
+          return;
+        } catch (error) {
+          console.error(error);
+          m.reply('there was an error trying to execute that command!');
+        }
         break;
       case 2:
         tools.printFileToDiscord(m, 0, TALKING_POINTS_TEXT_FILENAME);
@@ -45,8 +56,8 @@ async function commandTalk(m, mArgs){
 module.exports = {
 	name: 'talk',
 	description: 'Talk to the Dialogflow bot?',
-	execute(message, args) {
-        //commandTalk(message, args);
+	execute(message, args, discordClient) {
+        //commandTalk(message, args, discordClient); NO LONGER NECESSARY
         tools.sendReply("Sorry this is disabled.", message);
 	},
 };
