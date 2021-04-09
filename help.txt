@@ -1,6 +1,8 @@
-`talk <Message>`: Send a message to me, the bot!
+`talk <Message>`: ~~Send a message to me, the bot!~~ This command has been shut down for reasons.
 `rules`: Get a list of the rules!
-`help`: Print out THIS list!
+`help`: Print out THIS list! 
 `lmgtfy [user]`: generate a Let Me Google That For You Link!
     If you supply a user, it will ping them it!
-`admin`: See and access admin commands. ADMINS ONLY LMAO.
+`admin`: ~~See and access admin commands. ADMINS ONLY LMAO.~~ This is a fucking worthless command that does nothing stop asking
+`identity`: Get some tags regarding what you identify as! I will fucking gut you if you do this to be a douche.
+`ping`: ping!

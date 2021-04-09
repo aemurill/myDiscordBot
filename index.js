@@ -325,7 +325,7 @@ discordClient.on('message', m => {
   //check if non-modular command
   switch(mCommand){
     /*case 'rules':
-      commandRules(m, 1);
+      commandAdmin(m);
       break;
       */
     default: //DEFAULT FALLBACK
