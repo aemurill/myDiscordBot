@@ -11,7 +11,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "node index.js --trace-warnings",
-    "start": "node --trace-warnings server.js"
+    "start": "node index.js --trace-warnings"
   },
   "repository": {
     "type": "git",
