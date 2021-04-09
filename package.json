@@ -1,0 +1,29 @@
+{
+  "name": "mydiscordbot",
+  "version": "0.1.0",
+  "description": "Discord Bot for my Personal Server, but can be used or forked if wanted",
+  "main": "index.js",
+  "dependencies": {
+    "dialogflow": "^1.2.0",
+    "discord.js": "^12.4.1",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node index.js --trace-warnings"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aemurill/myDiscordBot.git"
+  },
+  "keywords": [
+    "Discord",
+    "bot"
+  ],
+  "author": "aemurill",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aemurill/myDiscordBot/issues"
+  },
+  "homepage": "https://github.com/aemurill/myDiscordBot#readme"
+}
