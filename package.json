@@ -10,7 +10,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node index.js --trace-warnings"
+    "test": "node index.js --trace-warnings",
+    "start": "node --trace-warnings server.js"
   },
   "repository": {
     "type": "git",
