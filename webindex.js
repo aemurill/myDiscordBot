@@ -2,7 +2,6 @@
 
 let express = require('express')
 let app = express()
-let bodyParser = require('body-parser')
 
 /***** NEW *****/
 // Require the module webhook/index.js
@@ -11,8 +10,8 @@ let webhook = require('./webhook')
 
 // These two following lines ensures that every incomming request
 // is parsed to json automatically
-app.use(bodyParser.urlencoded({ extended: 'true' }))
-app.use(bodyParser.json())
+app.use(express.urlencoded({ extended: 'true' }))
+app.use(express.json())
 
 // Allow access to resources from any origin and any headers. As we want
 // the agent to reach the webhook and not bother with CORS, they are fully
