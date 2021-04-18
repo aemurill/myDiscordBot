@@ -4,5 +4,5 @@
 `lmgtfy [user]`: generate a Let Me Google That For You Link!
     If you supply a user, it will ping them it!
 `admin`: ~~See and access admin commands. ADMINS ONLY LMAO.~~ This is a fucking worthless command that does nothing stop asking
-`identity`: Get some tags regarding what you identify as! I will fucking gut you if you do this to be a douche.
+`identityroles`: Get some tags regarding what you identify as! I will fucking gut you if you do this to be a douche. *Ask Bee if you want more*
 `ping`: ping!

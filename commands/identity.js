@@ -24,22 +24,26 @@ const consts = require('../consts.js');
  */
 
 const cname = 'identityroles';
+var prefix = '';
+  
 
-function generateOptions(option){
+function generateIdOptions(option){
 	var str = '';
 	for(const element of option){
 		console.log(element)
 		str+= '  • '+element+'\n';
 	}
+	str+= +
+	'Do \"' +prefix+cname+ ' <option>\" to toggle that role\n' +
+	'For example: '+prefix +cname+ ' '+option[0];
 	return str;
 }
 
-function descRoles(number, message){
+function descRoles(number, message){	
 	var x = function(message, subset){
 		tools.sendReply(
 			'Write out the option you would like to be added/removed:\n'+
-			generateOptions(consts[subset]) +
-			'Do \"' +cname+ ' <option>\" to toggle that role'
+			generateIdOptions(consts[subset])
 			,message);
 	}
 
@@ -110,8 +114,8 @@ function toggleRole(option, message){
 
 function improperUse(message){
 	tools.sendReply(
-		'Please use this role correctly, as instructed previously or just as'
-		+ '\"help ' +cname+ '\".'
+		'Please use this command correctly, as instructed previously'/*or just ask'
+		+ '\"'+prefix+'help ' +cname+ '\".'*/
 		,message);		
 }
 
@@ -120,6 +124,8 @@ module.exports = {
 	description: 'Use me to pick your pronouns and whatnot, yah?',
 	guildOnly: true,
 	execute(message, args) {		
+		const config = tools.readJsonFromFileAsString(consts.CONFIG_FILENAME);  
+		prefix = config.prefix;
 		if (args.length >= 1){
 			//NUMBER - role listing
 			if(!isNaN(args[0])) descRoles(args[0], message);
@@ -135,7 +141,8 @@ module.exports = {
 				'  1) Pronouns\n' +
 				'  2) Gender\n' +
 				'  3) Sexuality\n' +
-				'Do \"' +cname+ ' <number>\" to see that list' 				
+				'Do \"'+prefix +cname+ ' <number>\" to see that list\n' +
+				'For example: '+prefix +cname+ ' 1'				
 				,message);
 			return;
 		}
