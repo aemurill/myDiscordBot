@@ -33,8 +33,7 @@ function generateIdOptions(option){
 		console.log(element)
 		str+= '  • '+element+'\n';
 	}
-	str+= +
-	'Do \"' +prefix+cname+ ' <option>\" to toggle that role\n' +
+	str+= 'Do \"' +prefix+cname+ ' <option>\" to toggle that role\n' +
 	'For example: '+prefix +cname+ ' '+option[0];
 	return str;
 }
