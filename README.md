@@ -2,7 +2,7 @@
 ========================
 
 An exploration into Discord Bot creation by Axel.
-Originalliy forked off of [Max Isom's code](https://github.com/codetheweb/dialogflow-to-discord)
+Originally forked off of [Max Isom's code](https://github.com/codetheweb/dialogflow-to-discord)
 
 ## Usage
 You'll need to set 3 environment variables:
